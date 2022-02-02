@@ -1,9 +1,5 @@
 package;
 
-#if desktop
-import Discord.DiscordClient;
-import sys.thread.Thread;
-#end
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -28,6 +24,14 @@ import io.newgrounds.NG;
 import lime.app.Application;
 import openfl.Assets;
 
+#if windows
+import Discord.DiscordClient;
+#end
+
+#if desktop
+import sys.thread.Thread;
+#end
+
 using StringTools;
 
 class TitleState extends MusicBeatState
@@ -49,8 +53,23 @@ class TitleState extends MusicBeatState
 		#if polymod
 		polymod.Polymod.init({modRoot: "mods", dirs: ['introMod']});
 		#end
+		
+		#if sys
+		if (!sys.FileSystem.exists(Sys.getCwd() + "/assets/replays"))
+			sys.FileSystem.createDirectory(Sys.getCwd() + "/assets/replays");
+		#end
 
+		
 		PlayerSettings.init();
+
+		#if windows
+		DiscordClient.initialize();
+
+		Application.current.onExit.add (function (exitCode) {
+			DiscordClient.shutdown();
+		 });
+		 
+		#end
 
 		curWacky = FlxG.random.getObject(getIntroTextShit());
 
@@ -58,7 +77,7 @@ class TitleState extends MusicBeatState
 
 		super.create();
 
-		NGio.noLogin(APIStuff.API);
+		// NGio.noLogin(APIStuff.API);
 
 		#if ng
 		var ng:NGio = new NGio(APIStuff.API, APIStuff.EncKey);
@@ -66,6 +85,8 @@ class TitleState extends MusicBeatState
 		#end
 
 		FlxG.save.bind('funkin', 'ninjamuffin99');
+
+		KadeEngineData.initSave();
 
 		Highscore.load();
 
@@ -88,18 +109,10 @@ class TitleState extends MusicBeatState
 		#elseif CHARTING
 		FlxG.switchState(new ChartingState());
 		#else
-		new FlxTimer().start(1, function(tmr:FlxTimer)
+		new FlxTimer().start(3, function(tmr:FlxTimer)
 		{
 			startIntro();
 		});
-		#end
-
-		#if desktop
-		DiscordClient.initialize();
-		
-		Application.current.onExit.add (function (exitCode) {
-			DiscordClient.shutdown();
-		 });
 		#end
 	}
 
@@ -288,23 +301,32 @@ class TitleState extends MusicBeatState
 
 			new FlxTimer().start(2, function(tmr:FlxTimer)
 			{
-				// Check if version is outdated
 
-				var version:String = "v" + Application.current.meta.get('version');
+				// Get current version of Kade Engine
 
-				if (version.trim() != NGio.GAME_VER_NUMS.trim() && !OutdatedSubState.leftState)
-				{
-					FlxG.switchState(new OutdatedSubState());
-					trace('OLD VERSION!');
-					trace('old ver');
-					trace(version.trim());
-					trace('cur ver');
-					trace(NGio.GAME_VER_NUMS.trim());
+				var http = new haxe.Http("https://raw.githubusercontent.com/KadeDev/Kade-Engine/master/version.downloadMe");
+
+				http.onData = function (data:String) {
+				  
+				  	if (!MainMenuState.kadeEngineVer.contains(data.trim()) && !OutdatedSubState.leftState && MainMenuState.nightly == "")
+					{
+						trace('outdated lmao! ' + data.trim() + ' != ' + MainMenuState.kadeEngineVer);
+						OutdatedSubState.needVer = data;
+						FlxG.switchState(new WarningState());
+					}
+					else
+					{
+						FlxG.switchState(new WarningState());
+					}
 				}
-				else
-				{
-					FlxG.switchState(new MainMenuState());
+				
+				http.onError = function (error) {
+				  trace('error: $error');
+				  FlxG.switchState(new WarningState()); // fail but we go anyway
 				}
+				
+				http.request();
+
 			});
 			// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
 		}
@@ -376,9 +398,9 @@ class TitleState extends MusicBeatState
 			// credTextShit.text = 'In association \nwith';
 			// credTextShit.screenCenter();
 			case 5:
-				createCoolText(['In association', 'with']);
+				createCoolText(['Kade Engine', 'by']);
 			case 7:
-				addMoreText('newgrounds');
+				addMoreText('KadeDeveloper');
 				ngSpr.visible = true;
 			// credTextShit.text += '\nNewgrounds';
 			case 8:
@@ -400,13 +422,13 @@ class TitleState extends MusicBeatState
 			// credTextShit.text = "Friday";
 			// credTextShit.screenCenter();
 			case 13:
-				addMoreText('Friday');
+				addMoreText("BFS");
 			// credTextShit.visible = true;
 			case 14:
-				addMoreText('Night');
+				addMoreText('WIFE');
 			// credTextShit.text += '\nNight';
 			case 15:
-				addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
+				addMoreText('FOREVER'); // credTextShit.text += '\nFunkin';
 
 			case 16:
 				skipIntro();
