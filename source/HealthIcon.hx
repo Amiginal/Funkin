@@ -12,6 +12,7 @@ class HealthIcon extends FlxSprite
 	public function new(char:String = 'bf', isPlayer:Bool = false)
 	{
 		super();
+		
 		loadGraphic(Paths.image('iconGrid'), true, 150, 150);
 
 		antialiasing = true;
@@ -31,9 +32,14 @@ class HealthIcon extends FlxSprite
 		animation.add('spirit', [23, 23], 0, false, isPlayer);
 		animation.add('bf-old', [14, 15], 0, false, isPlayer);
 		animation.add('gf', [16], 0, false, isPlayer);
-		animation.add('parents-christmas', [17], 0, false, isPlayer);
+		animation.add('gf-christmas', [16], 0, false, isPlayer);
+		animation.add('gf-pixel', [16], 0, false, isPlayer);
+		animation.add('parents-christmas', [17, 18], 0, false, isPlayer);
 		animation.add('monster', [19, 20], 0, false, isPlayer);
 		animation.add('monster-christmas', [19, 20], 0, false, isPlayer);
+		animation.add('sky', [24, 25], 0, false, isPlayer);
+		animation.add('sky-annoyed', [24, 25], 0, false, isPlayer);
+		animation.add('sky-mad', [26, 26], 0, false, isPlayer);
 		animation.play(char);
 		scrollFactor.set();
 	}

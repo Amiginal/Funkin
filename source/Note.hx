@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.FlxMath;
@@ -32,6 +33,8 @@ class Note extends FlxSprite
 	public static var BLUE_NOTE:Int = 1;
 	public static var RED_NOTE:Int = 3;
 
+	public var rating:String = "shit";
+
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false)
 	{
 		super();
@@ -46,6 +49,9 @@ class Note extends FlxSprite
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
 		y -= 2000;
 		this.strumTime = strumTime;
+
+		if (this.strumTime < 0 )
+			this.strumTime = 0;
 
 		this.noteData = noteData;
 
@@ -120,6 +126,12 @@ class Note extends FlxSprite
 
 		// trace(prevNote);
 
+		// we make sure its downscroll and its a SUSTAIN NOTE (aka a trail, not a note)
+		// and flip it so it doesn't look weird.
+		// THIS DOESN'T FUCKING FLIP THE NOTE, CONTRIBUTERS DON'T JUST COMMENT THIS OUT JESUS
+		if (FlxG.save.data.downscroll && sustainNote) 
+			flipY = true;
+
 		if (isSustainNote && prevNote != null)
 		{
 			noteScore * 0.2;
@@ -160,7 +172,7 @@ class Note extends FlxSprite
 						prevNote.animation.play('redhold');
 				}
 
-				prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * PlayState.SONG.speed;
+				prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.8 * FlxG.save.data.scrollSpeed;
 				prevNote.updateHitbox();
 				// prevNote.setGraphicSize();
 			}
